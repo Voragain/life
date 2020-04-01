@@ -78,9 +78,19 @@ entity(Type, Age, Pos) ->
 	{From, {get, type}} ->
 	    From ! {ok, Type},
 	    entity(Type, Age, Pos);
+	{From, debug} ->
+		io:fwrite("~w: {Type: ~w, Age: ~w, Pos: ~w}", self(), Type, Age, Pos),
+		entity(Type, Age, Pos);
 	%% Actions
 	{_, {action, do_one_turn}} ->
 	    Dir = number_to_dir(rand:uniform(4)),
 	    NPos = move(Pos, Dir),
-	    entity(Type, Age +1, NPos)	
+	    entity(Type, Age +1, NPos)
     end.
+
+world(Entities, Tiles) -> 
+	receive
+	{From, {debug}} ->
+		lists:map(fun(E) -> {E ! debug} end, Entities),
+		world(Entities, Tiles)
+	end.
